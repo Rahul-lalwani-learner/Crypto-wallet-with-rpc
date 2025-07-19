@@ -1,103 +1,168 @@
-import Image from "next/image";
+"use client"
+import { useState } from "react";
+import { Button } from "./components/Button";
+import { SecretPhrase } from "./components/SecretPhrase";
+import { Wallets } from "./components/Wallets";
+import { mnemonicToSeedSync } from "bip39";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [loadSecretPhrase, setLoadSecretPhrase] = useState(false);
+  const [secretPhrase, setSecretPhrase] = useState("");
+  const [step, setStep] = useState<'start' | 'phrase' | 'wallets'>('start');
+  const [existingSeedPhrase, setExistingSeedPhrase] = useState("");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleGenerate = () => {
+    setLoadSecretPhrase(true);
+    setStep('phrase');
+  };
+
+  const handleUseExistingSeed = () => {
+    if (existingSeedPhrase.trim()) {
+      setSecretPhrase(existingSeedPhrase.trim());
+      setLoadSecretPhrase(true);
+      setStep('wallets');
+    }
+  };
+
+  const handleContinueToWallets = () => {
+    setStep('wallets');
+  };
+
+  return (
+    <div className="min-h-screen py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center mb-6">
+            <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-xl flex items-center justify-center mr-4">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h1 className="text-4xl font-bold gradient-text">CryptoVault</h1>
+          </div>
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+            Generate secure Solana wallets with industry-standard mnemonic seed phrases. 
+            Your keys, your crypto, your control.
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Security Notice */}
+        <div className="glass rounded-2xl p-6 mb-8 border-yellow-500/20">
+          <div className="flex items-start space-x-4">
+            <div className="flex-shrink-0">
+              <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-yellow-500 mb-2">Security Warning</h3>
+              <p className="text-gray-300 text-sm">
+                This is a development tool. Never use generated wallets for real funds. 
+                Always verify the security of any wallet before storing valuable assets.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="glass rounded-2xl p-8 shadow-glow">
+          {step === 'start' && (
+            <div className="text-center">
+              <div className="mb-8">
+                <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-full mx-auto mb-6 flex items-center justify-center">
+                  <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                  </svg>
+                </div>
+                <h2 className="text-3xl font-bold mb-4">Generate Your Secure Wallet</h2>
+                <p className="text-gray-400 text-lg max-w-md mx-auto">
+                  Create a new mnemonic seed phrase to generate multiple Solana wallets
+                </p>
+              </div>
+
+              {/* Existing Seed Phrase Input */}
+              <div className="mb-8 max-w-md mx-auto">
+                <h3 className="text-lg font-semibold mb-4 text-gray-200">
+                  Or use your existing seed phrase
+                </h3>
+                <div className="space-y-4">
+                  <textarea
+                    value={existingSeedPhrase}
+                    onChange={(e) => setExistingSeedPhrase(e.target.value)}
+                    placeholder="Enter your 12-word seed phrase separated by spaces..."
+                    className="w-full p-4 bg-gray-800/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 resize-none h-24 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  />
+                  <Button 
+                    clickHandler={handleUseExistingSeed}
+                    size="md" 
+                    variant="secondary"
+                    disabled={!existingSeedPhrase.trim()}
+                    extraClass="w-full"
+                  >
+                    Use Existing Seed Phrase
+                  </Button>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="flex items-center my-8 max-w-md mx-auto">
+                <div className="flex-1 border-t border-gray-600"></div>
+                <span className="px-4 text-gray-400 text-sm">OR</span>
+                <div className="flex-1 border-t border-gray-600"></div>
+              </div>
+
+              <Button 
+                clickHandler={handleGenerate} 
+                size="lg" 
+                variant="primary"
+                extraClass="shadow-glow"
+              >
+                Generate New Seed Phrase
+              </Button>
+            </div>
+          )}          {step === 'phrase' && loadSecretPhrase && (
+            <div>
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold mb-2">Your Secret Recovery Phrase</h2>
+                <p className="text-gray-400">
+                  Write down these 12 words in the exact order shown. Keep them safe and never share them.
+                </p>
+              </div>
+              <SecretPhrase setPhrase={setSecretPhrase} Phrase={secretPhrase} />
+              <div className="text-center mt-8">
+                <Button 
+                  clickHandler={handleContinueToWallets} 
+                  size="md" 
+                  variant="primary"
+                  disabled={!secretPhrase}
+                >
+                  Continue to Wallets
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {step === 'wallets' && loadSecretPhrase && (
+            <div>
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold mb-2">Your Solana Wallets</h2>
+                <p className="text-gray-400">
+                  Generate multiple wallets from your seed phrase using BIP44 derivation
+                </p>
+              </div>
+              <Wallets seed={mnemonicToSeedSync(secretPhrase).toString('hex')} />
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-12 text-gray-500">
+          <p className="text-sm">
+            Built with Next.js, Tailwind CSS, and Solana Web3.js
+          </p>
+        </div>
+      </div>
     </div>
-  );
+  )
 }
