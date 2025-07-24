@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "CryptoVault - Secure Web3 Wallet Generator",
   description: "Generate secure Solana wallets with mnemonic seed phrases",
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({

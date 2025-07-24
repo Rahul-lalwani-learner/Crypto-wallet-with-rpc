@@ -1,5 +1,5 @@
 'use client'
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Button } from "./Button";
 import { derivePath } from "ed25519-hd-key";
 import nacl from "tweetnacl";
@@ -18,8 +18,18 @@ export function Wallets({ seed }: { seed: string }) {
     const [keypairs, setKeyPairs] = useState<WalletData[]>([]);
     const [showPrivateKeys, setShowPrivateKeys] = useState<{ [key: number]: boolean }>({});
     const [copiedItems, setCopiedItems] = useState<{ [key: string]: boolean }>({});
+    const [solPrice, setSolPrice] = useState<number | null>(null);
+    const [selectedNetwork, setSelectedNetwork] = useState<'devnet' | 'mainnet'>('devnet');
     const walletNo = useRef(0);
     const Path = "m/44'/501'/";
+
+    // Fetch SOL price on component mount
+    useEffect(() => {
+        fetchSolPrice();
+        // Fetch price every 5 minutes to keep it updated
+        const interval = setInterval(fetchSolPrice, 5 * 60 * 1000);
+        return () => clearInterval(interval);
+    }, []);
 
     function generateWallet() {
         const derivedSeed = derivePath(Path + `${walletNo.current}'`, seed).key;
@@ -62,6 +72,19 @@ export function Wallets({ seed }: { seed: string }) {
         setKeyPairs(prev => prev.filter(wallet => wallet.index !== index));
     };
 
+    const fetchSolPrice = async () => {
+        try {
+            const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
+            const data = await response.json();
+            if (data.solana && data.solana.usd) {
+                setSolPrice(data.solana.usd);
+            }
+        } catch (error) {
+            console.error('Error fetching SOL price:', error);
+            setSolPrice(150); // Fallback to default value
+        }
+    };
+
     const fetchBalance = async (address: string, walletIndex: number) => {
         // Set loading state
         setKeyPairs(prev => prev.map(wallet => 
@@ -74,7 +97,7 @@ export function Wallets({ seed }: { seed: string }) {
             'devnet': "https://solana-devnet.g.alchemy.com/v2/",
             'mainnet': "https://solana-mainnet.g.alchemy.com/v2/"
         }
-        const url = `${Network.devnet}${config.alchemyApiKey}`;
+        const url = `${Network[selectedNetwork]}${config.alchemyApiKey}`;
         const options = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -113,6 +136,61 @@ export function Wallets({ seed }: { seed: string }) {
 
     return (
         <div className="w-full">
+            {/* Network Selector */}
+            <div className="mb-6">
+                <div className="flex items-center justify-center mb-4">
+                    <div className="bg-gray-800 rounded-lg p-1 flex items-center space-x-1">
+                        <button
+                            onClick={() => setSelectedNetwork('devnet')}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                                selectedNetwork === 'devnet'
+                                    ? 'bg-indigo-600 text-white shadow-md'
+                                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                            }`}
+                        >
+                            <div className="flex items-center space-x-2">
+                                <div className={`w-2 h-2 rounded-full ${selectedNetwork === 'devnet' ? 'bg-green-400' : 'bg-gray-400'}`}></div>
+                                <span>Devnet</span>
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => setSelectedNetwork('mainnet')}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                                selectedNetwork === 'mainnet'
+                                    ? 'bg-orange-600 text-white shadow-md'
+                                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                            }`}
+                        >
+                            <div className="flex items-center space-x-2">
+                                <div className={`w-2 h-2 rounded-full ${selectedNetwork === 'mainnet' ? 'bg-orange-400' : 'bg-gray-400'}`}></div>
+                                <span>Mainnet</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Mainnet Warning */}
+                {selectedNetwork === 'mainnet' && (
+                    <div className="glass rounded-xl p-4 mb-6 border-red-500/20 bg-red-500/5">
+                        <div className="flex items-start space-x-3">
+                            <div className="flex-shrink-0">
+                                <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-red-500 mb-2">⚠️ Mainnet Warning</h3>
+                                <p className="text-red-300 text-sm">
+                                    <strong>DANGER:</strong> You are connected to Solana Mainnet. This is a development tool and should 
+                                    <strong> NEVER be used with real funds</strong>. Do not send actual SOL or tokens to these addresses. 
+                                    Use Devnet for testing purposes only.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+
             {/* Generate Wallet Button */}
             <div className="text-center mb-8">
                 <Button 
@@ -156,7 +234,16 @@ export function Wallets({ seed }: { seed: string }) {
                                     </div>
                                     <div>
                                         <h3 className="text-lg font-semibold">Wallet {wallet.index + 1}</h3>
-                                        <p className="text-gray-400 text-sm">Solana Wallet</p>
+                                        <div className="flex items-center space-x-2">
+                                            <p className="text-gray-400 text-sm">Solana Wallet</p>
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                selectedNetwork === 'devnet' 
+                                                    ? 'bg-green-100 text-green-800' 
+                                                    : 'bg-orange-100 text-orange-800'
+                                            }`}>
+                                                {selectedNetwork === 'devnet' ? '🔧 Devnet' : '🚨 Mainnet'}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                                 <Button
@@ -217,9 +304,9 @@ export function Wallets({ seed }: { seed: string }) {
                                                 : 'Click "Show Balance" to load'
                                             }
                                         </code>
-                                        {wallet.balance !== undefined && (
+                                        {wallet.balance !== undefined && solPrice && (
                                             <span className="text-xs text-gray-400">
-                                                ≈ ${(wallet.balance * 150).toFixed(2)} USD
+                                                ≈ ${(wallet.balance * solPrice).toFixed(2)} USD
                                             </span>
                                         )}
                                     </div>
