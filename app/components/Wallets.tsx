@@ -225,18 +225,18 @@ export function Wallets({ seed }: { seed: string }) {
                             className="glass rounded-xl p-6 border border-gray-600 hover:border-indigo-500/50 transition-all duration-200"
                         >
                             {/* Wallet Header */}
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                                <div className="flex items-center space-x-3 min-w-0 flex-1">
+                                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
                                         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                                         </svg>
                                     </div>
-                                    <div>
-                                        <h3 className="text-lg font-semibold">Wallet {wallet.index + 1}</h3>
-                                        <div className="flex items-center space-x-2">
+                                    <div className="min-w-0 flex-1">
+                                        <h3 className="text-lg font-semibold truncate">Wallet {wallet.index + 1}</h3>
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                                             <p className="text-gray-400 text-sm">Solana Wallet</p>
-                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium w-fit ${
                                                 selectedNetwork === 'devnet' 
                                                     ? 'bg-green-100 text-green-800' 
                                                     : 'bg-orange-100 text-orange-800'
@@ -246,17 +246,19 @@ export function Wallets({ seed }: { seed: string }) {
                                         </div>
                                     </div>
                                 </div>
-                                <Button
-                                    size="sm"
-                                    variant="danger"
-                                    clickHandler={() => deleteWallet(wallet.index)}
-                                    extraClass="flex items-center space-x-1"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                    <span>Delete</span>
-                                </Button>
+                                <div className="flex-shrink-0">
+                                    <Button
+                                        size="sm"
+                                        variant="danger"
+                                        clickHandler={() => deleteWallet(wallet.index)}
+                                        extraClass="flex items-center space-x-1 w-full sm:w-auto justify-center"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        <span>Delete</span>
+                                    </Button>
+                                </div>
                             </div>
 
                             {/* Balance Section */}
